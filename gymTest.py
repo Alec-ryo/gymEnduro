@@ -29,8 +29,6 @@ import math
 from numpy import asarray, load
 from numpy import savez_compressed
 
-import numpy as np
-
 INPUT_SHAPE = (84,84)
 WINDOW_LENGTH = 1
 nb_actions = 3
@@ -103,10 +101,11 @@ def create_model(observation):
 def playing_game(env):
     observation_list = []
     action_list = []
+    sleep_time = 0.1
     # 10 iterations to 1 second
-    # 60 seconds to 1 minnute
+    # 60 seconds to 1 minute
     # 5 minutes gaming
-    time_game = 10*60*5
+    time_game = int(1/sleep_time)*60*5
     for i_episode in range(1):
         observation = env.reset()
         action = 8
@@ -137,7 +136,7 @@ def playing_game(env):
             if save_information:
                 observation_list.append(processed_observation)
                 action_list.append(action)
-            time.sleep(0.1)
+            time.sleep(sleep_time)
     
     return observation_list, action_list
 
@@ -154,10 +153,14 @@ def save_on_npy(observation_list, action_list):
     savez_compressed('observation_list.npz', observation_list)
     savez_compressed('action_list.npz', action_list)
 
-def train(env):
+def game_to_generate_images(env):
     observation_list, action_list = playing_game(env)
     save_on_npy(observation_list, action_list)
     return observation_list, action_list
+
+# onehot is array representing number in binary representation
+def onehot_to_int(onehot):
+    return int("".join(str(x) for x in onehot), 2) 
 
 args = arguments()
 env = gym.make(args.env_name)
@@ -165,24 +168,35 @@ observation = env.reset()
 l_training = True
 
 if l_training:
-    observation_list, action_list = train(env)
+    observation_list, action_list = game_to_generate_images(env)
 else:
-    # load
-    observation_list = load('observation_list.npz')
-    action_list = load('action_list.npz')
+    load_actions = np.load('banco/action_list.npz')
+    print(load_actions.keys())
+    action_list = load_actions.f.arr_0
+    load_observations = np.load('banco/observation_list.npz')
+    observation_list = load_observations.f.arr_0
 
+#type
 observation = rgb2gray(observation)
 img = Image.fromarray(observation)
 img = img.resize(INPUT_SHAPE)
 processed_observation = np.array(img)
 
-model = create_model(processed_observation)
+x_train = np.random.random((1000, 20))
+print(type(x_train))
 
-print(observation_list)
+# model = create_model(processed_observation)
+
 observation_arr = np.array(observation_list)
 action_arr = np.array(action_list)
 
-model.fit(observation_arr, action_arr, epochs=150, batch_size=10)
+print(len(action_list))
+print("type action_list:", type(action_list))
+# np.set_printoptions(threshold=np.inf)
+
+print("type action_list:", type(action_list))
+print("observation_list:", observation_list)
+# model.fit(observation_arr, action_arr, epochs=150, batch_size=10)
 
 observation_list, action_list = playing_game(env)
 
