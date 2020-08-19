@@ -23,6 +23,9 @@ CIRCULAR_CENTER = 25, 25
 radius = 12
 n_angles = 360
 
+# movement_shape = 'circular'
+movement_shape = 'square'
+
 # Init Game
 pygame.init()
 
@@ -42,8 +45,8 @@ class Circle:
         self.radius = BUBBLES_RADIUS
         # self.x = random.randint(self.radius+1, WIDTH-self.radius-1)
         # self.y = random.randint(self.radius+1, HEIGHT-self.radius-1)
-        self.x = 75
-        self.y = 25
+        self.x = CIRCULAR_CENTER[0] +  int(CIRCULAR_CENTER[0]/2)
+        self.y = CIRCULAR_CENTER[1]
         self.speedx = random.random()
         self.speedy = random.random()
     
@@ -104,16 +107,31 @@ class Circle:
         # self.x += self.speedx
         # self.y += self.speedy
 
-        if self.ang_idx == n_angles:
-            self.ang_idx = 0
+        if movement_shape == 'circular':
+            if self.ang_idx == n_angles:
+                self.ang_idx = 0
 
-        x_center = radius * math.cos(self.angles[self.ang_idx])
-        y_center = radius * math.sin(self.angles[self.ang_idx])
+            x_center = radius * math.cos(self.angles[self.ang_idx])
+            y_center = radius * math.sin(self.angles[self.ang_idx])
 
-        self.ang_idx = self.ang_idx + 1
+            self.ang_idx = self.ang_idx + 1
 
-        self.x = CIRCULAR_CENTER[0] + x_center
-        self.y = CIRCULAR_CENTER[1] + y_center
+            self.x = CIRCULAR_CENTER[0] + x_center
+            self.y = CIRCULAR_CENTER[1] + y_center
+        
+        elif movement_shape == 'square':
+
+            if self.x == (CIRCULAR_CENTER[0] + int(CIRCULAR_CENTER[0]/2)) and (self.y < CIRCULAR_CENTER[0] + int(CIRCULAR_CENTER[0]/2)):
+                self.y = self.y + 1
+            elif self.x > (CIRCULAR_CENTER[0] - int(CIRCULAR_CENTER[0]/2)) and self.y == (CIRCULAR_CENTER[0] + int(CIRCULAR_CENTER[0]/2)):
+                self.x = self.x - 1
+            elif self.x == (CIRCULAR_CENTER[0] - int(CIRCULAR_CENTER[0]/2)) and self.y > (CIRCULAR_CENTER[0] - int(CIRCULAR_CENTER[0]/2)):
+                self.y = self.y - 1
+            elif self.x < (CIRCULAR_CENTER[0] + int(CIRCULAR_CENTER[0]/2)) and self.y == (CIRCULAR_CENTER[0] - int(CIRCULAR_CENTER[0]/2)):
+                self.x = self.x + 1
+            
+            print("x: ", self.x)
+            print("y: ", self.y)
     
     def show(self):
         pygame.draw.circle(surface, BUBBLES_COLOR, (int(self.x),int(HEIGHT-self.y)), self.radius)
